@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L6 — DFA Stop Words Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0e0f11;
+    --bg2:       #16181c;
+    --bg3:       #1e2026;
+    --border:    #2a2d35;
+    --border2:   #363a44;
+    --text:      #e8e9ec;
+    --text2:     #8a8f9e;
+    --text3:     #555b6a;
+    --accent:    #a78bfa;
+    --accent2:   #7c5cfa;
+    --accept:    #34d399;
+    --reject:    #f87171;
+    --hit-bg:    rgba(167,139,250,0.18);
+    --hit-fg:    #c4b5fd;
+    --mono:      'IBM Plex Mono', monospace;
+    --serif:     'DM Serif Display', serif;
+    --sans:      'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  .logo { font-family: var(--serif); font-size: 20px; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  .hero {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: .5rem;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p { color: var(--text2); font-size: 13px; max-width: 600px; }
+
+  .grid-2 { 
+    display: grid; 
+    grid-template-columns: 3fr 1fr;  /* Changed from 1fr 1fr to 3fr 1fr for 3:1 ratio */
+    gap: 1rem; 
+    margin-bottom: 1rem; 
+  }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+    .card-inputtext {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    
+  }
+    .card-stopwords {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    padding: 10px 14px;
+    transition: border-color .2s;
+    outline: none;
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.7;
+  }
+  textarea:focus { border-color: var(--accent2); }
+
+  .action-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+
+  button {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all .15s;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text);
+    flex: 1;  /* Add this line to make buttons stretch equally */
+  }
+  button:hover { background: var(--bg2); border-color: var(--accent2); }
+  button:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-ghost { background: transparent; }
+  .btn-ghost:hover { background: var(--bg3); }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 500px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .85rem 1rem;
+    text-align: center;
+  }
+  .stat-val { font-size: 26px; font-weight: 300; color: var(--text); font-family: var(--mono); line-height: 1.1; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  #output {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 2.1;
+    color: var(--text2);
+    min-height: 80px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .hit {
+    background: var(--hit-bg);
+    color: var(--hit-fg);
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--accent2);
+    cursor: default;
+    transition: background .15s;
+  }
+  .hit:hover { background: rgba(167,139,250,0.3); }
+
+  #log {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text3);
+    max-height: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+  .log-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
+  .log-row:last-child { border-bottom: none; }
+  .tag-accept { color: var(--accept); font-weight: 500; min-width: 60px; }
+  .tag-reject { color: var(--reject); min-width: 60px; }
+  .log-word { color: var(--text); min-width: 90px; }
+  .log-trace { color: var(--text3); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-pos { color: var(--text3); font-size: 10px; white-space: nowrap; }
+
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+  }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .tab {
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 6px 14px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text3);
+    cursor: pointer;
+    border-radius: 0;
+    transition: color .15s, border-color .15s;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text2); background: none; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .occ-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+  .occ-table th { text-align: left; padding: 6px 10px; color: var(--text3); font-weight: 400; border-bottom: 1px solid var(--border); }
+  .occ-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .occ-table tr:hover td { background: var(--bg3); }
+  .occ-bar { height: 4px; border-radius: 2px; background: var(--accent2); display: inline-block; vertical-align: middle; margin-left: 8px; }
+
+  .empty-state { color: var(--text3); font-family: var(--mono); font-size: 12px; padding: 1.5rem 0; text-align: center; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DFA <span>Stop</span>Words</div>
+  <span class="badge">CPT411 · L6 · 2025/2026</span>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>English Stop Words<br><em>Finder</em> — DFA</h1>
+    <p>Processes input text token-by-token, each character read left-to-right through a Deterministic Finite Automaton. Paste any text and click Run.</p>
+  </div>
+
+    <div class="grid-2">
+        <div class="card-inputtext">
+            <div class="card-label">input text</div>
+                <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
+            <div class="action-row">
+                <button class="btn-primary" onclick="runDFA()">▶ Run full text</button>
+                <button class="btn-ghost" onclick="clearAll()">Clear</button>
+            </div>
+        </div>
+        <div class="card-stopwords">
+            <div class="card-label">stop word set Σ*  <span style="margin-left:auto;font-size:10px;color:var(--text3)">25 words</span></div>
+            <div class="chip-grid" id="wordChips"></div>
+        </div>
+    </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-tokens">—</div><div class="stat-lbl">tokens</div></div>
+    <div class="stat"><div class="stat-val" id="s-hits">—</div><div class="stat-lbl">matches</div></div>
+    <div class="stat"><div class="stat-val" id="s-unique">—</div><div class="stat-lbl">unique</div></div>
+    <div class="stat"><div class="stat-val" id="s-pct">—</div><div class="stat-lbl">coverage</div></div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('annotated', this)">annotated output</button>
+      <button class="tab" onclick="switchTab('trace', this)">dfa trace</button>
+      <button class="tab" onclick="switchTab('occurrences', this)">occurrences</button>
+    </div>
+
+    <div id="tab-annotated" class="tab-panel active">
+      <div id="output" class="empty-state">Run the DFA on a text to see annotated output.</div>
+    </div>
+
+    <div id="tab-trace" class="tab-panel">
+      <div id="log" class="empty-state">State trace will appear here after running.</div>
+    </div>
+
+    <div id="tab-occurrences" class="tab-panel">
+      <div id="occTable" class="empty-state">Occurrence table will appear after running.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STOP_WORDS = new Set([
+  'a','an','the',
+  'i','it','he','she','we','they',
+  'my','its','me','us','them',
+  'and','or','but','so','if',
+  'in','on','at','to','of','by'
+]);
+
+/* chip list */
+[...STOP_WORDS].sort().forEach(w => {
+  const c = document.createElement('span');
+  c.className = 'chip';
+  c.textContent = w;
+  document.getElementById('wordChips').appendChild(c);
+});
+
+/* build DFA transition table for a pattern */
+function buildTransitionTable(pattern) {
+  const n = pattern.length;
+  const table = Array.from({length: n + 1}, () => ({}));
+  const chars = new Set(pattern + 'abcdefghijklmnopqrstuvwxyz');
+  for (let s = 0; s <= n; s++) {
+    for (const ch of chars) {
+      if (s === n)               table[s][ch] = -1;
+      else if (ch === pattern[s]) table[s][ch] = s + 1;
+      else                        table[s][ch] = -1;
+    }
+  }
+  return table;
+}
+
+/* simulate DFA on a word against one pattern */
+function runDFAWord(word, pattern) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  const p = pattern.toLowerCase();
+  const n = p.length;
+  const table = buildTransitionTable(p);
+  let state = 0;
+  const trace = [];
+  for (const ch of w) {
+    const from = state;
+    const next = state === -1 ? -1 : (table[state]?.[ch] ?? -1);
+    trace.push({ ch, from, to: next });
+    state = next;
+    if (state === -1) break;
+  }
+  return { accepted: state === n && w.length === n, trace, finalState: state };
+}
+
+/* character-by-character tokeniser — no split() used */
+function tokenize(text) {
+  const tokens = [];
+  let i = 0;
+  while (i < text.length) {
+    if (/[a-zA-Z]/.test(text[i])) {
+      let j = i;
+      while (j < text.length && /[a-zA-Z]/.test(text[j])) j++;
+      tokens.push({ word: text.slice(i, j), start: i, type: 'word' });
+      i = j;
+    } else {
+      tokens.push({ word: text[i], start: i, type: 'other' });
+      i++;
+    }
+  }
+  return tokens;
+}
+
+/* check token against all stop words via DFA */
+function checkToken(token) {
+  const clean = token.toLowerCase().replace(/[^a-z]/g, '');
+  if (!clean) return { accepted: false, trace: [], finalState: -1 };
+  for (const sw of STOP_WORDS) {
+    if (sw.length !== clean.length) continue;
+    const r = runDFAWord(clean, sw);
+    if (r.accepted) return { ...r, matchedSw: sw };
+  }
+  const sameLen = [...STOP_WORDS].find(sw => sw.length === clean.length);
+  if (sameLen) return { ...runDFAWord(clean, sameLen), matchedSw: sameLen };
+  return { accepted: false, trace: [], finalState: -1 };
+}
+
+/* tabs */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* main DFA run */
+function runDFA() {
+  const text = document.getElementById('textInput').value;
+  if (!text.trim()) return;
+
+  const tokens = tokenize(text);
+  const wordTokens = tokens.filter(t => t.type === 'word');
+  const matches = [];
+  const logRows = [];
+  let idx = 0;
+
+  tokens.forEach(t => {
+    if (t.type !== 'word') return;
+    idx++;
+    const r = checkToken(t.word);
+    const traceStr = r.trace.map(x =>
+      `q${x.from}─${x.ch}→${x.to === -1 ? 'trap' : 'q'+x.to}`
+    ).join(' ');
+    logRows.push({ word: t.word, accepted: r.accepted, trace: traceStr, pos: t.start, idx });
+    if (r.accepted) matches.push({ word: t.word, pos: t.start });
+  });
+
+  const matchPositions = new Set(matches.map(m => m.pos));
+
+  /* annotated output */
+  const out = document.getElementById('output');
+  out.classList.remove('empty-state');
+  out.innerHTML = tokens.map(t => {
+    if (t.type === 'word' && matchPositions.has(t.start))
+      return `<mark class="hit" title="position ${t.start}">${t.word}</mark>`;
+    return t.word.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }).join('');
+
+  /* stats */
+  const unique = new Set(matches.map(m => m.word.toLowerCase())).size;
+  document.getElementById('s-tokens').textContent = wordTokens.length;
+  document.getElementById('s-hits').textContent   = matches.length;
+  document.getElementById('s-unique').textContent = unique;
+  document.getElementById('s-pct').textContent    = wordTokens.length
+    ? Math.round(matches.length / wordTokens.length * 100) + '%' : '0%';
+
+  /* trace log */
+  const logEl = document.getElementById('log');
+  logEl.classList.remove('empty-state');
+  logEl.innerHTML = logRows.map(r => `
+    <div class="log-row">
+      <span class="${r.accepted ? 'tag-accept' : 'tag-reject'}">[${r.accepted ? 'ACCEPT' : 'REJECT'}]</span>
+      <span class="log-word">"${r.word}"</span>
+      <span class="log-trace">${r.trace || '—'}</span>
+      <span class="log-pos">@char ${r.pos}</span>
+    </div>`).join('');
+
+  /* occurrences */
+  const counts = {};
+  matches.forEach(m => { const k = m.word.toLowerCase(); counts[k] = (counts[k]||0)+1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const maxCount = sorted[0]?.[1] || 1;
+  const occEl = document.getElementById('occTable');
+  occEl.classList.remove('empty-state');
+  occEl.innerHTML = sorted.length === 0
+    ? '<p class="empty-state">No stop words found.</p>'
+    : `<table class="occ-table">
+        <thead><tr><th>#</th><th>word</th><th>count</th><th>frequency</th></tr></thead>
+        <tbody>${sorted.map(([w,c],i) => `
+          <tr>
+            <td>${i+1}</td><td>${w}</td><td>${c}</td>
+            <td>
+              <span class="occ-bar" style="width:${Math.round(c/maxCount*160)}px"></span>
+              <span style="font-size:10px;color:var(--text3);margin-left:4px">${Math.round(c/wordTokens.length*100)}%</span>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+  /* go to annotated tab */
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.tab[onclick*="annotated"]').classList.add('active');
+  document.getElementById('tab-annotated').classList.add('active');
+}
+
+/* clear */
+function clearAll() {
+  document.getElementById('textInput').value = '';
+  ['output','log','occTable'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = 'empty-state';
+  });
+  document.getElementById('output').innerHTML  = 'Run the DFA on a text to see annotated output.';
+  document.getElementById('log').innerHTML     = 'State trace will appear here after running.';
+  document.getElementById('occTable').innerHTML = 'Occurrence table will appear after running.';
+  ['s-tokens','s-hits','s-unique','s-pct'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
+runDFA();
+</script>
+</body>
+</html>
