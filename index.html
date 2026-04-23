@@ -332,6 +332,28 @@ const STOP_WORDS = new Set([
   'in','on','at','to','of','by'
 ]);
 
+/* helper functions for manual string processing */
+function isLetter(ch) {
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+function toLower(ch) {
+  if (ch >= 'A' && ch <= 'Z') {
+    return String.fromCharCode(ch.charCodeAt(0) + 32);
+  }
+  return ch;
+}
+
+function cleanWord(word) {
+  let result = '';
+  for (let ch of word) {
+    if (isLetter(ch)) {
+      result += toLower(ch);
+    }
+  }
+  return result;
+}
+
 /* chip list */
 [...STOP_WORDS].sort().forEach(w => {
   const c = document.createElement('span');
@@ -357,8 +379,8 @@ function buildTransitionTable(pattern) {
 
 /* simulate DFA on a word against one pattern */
 function runDFAWord(word, pattern) {
-  const w = word.toLowerCase().replace(/[^a-z]/g, '');
-  const p = pattern.toLowerCase();
+  const w = cleanWord(word);
+  const p = cleanWord(pattern);
   const n = p.length;
   const table = buildTransitionTable(p);
   let state = 0;
@@ -378,9 +400,9 @@ function tokenize(text) {
   const tokens = [];
   let i = 0;
   while (i < text.length) {
-    if (/[a-zA-Z]/.test(text[i])) {
+    if (isLetter(text[i])) {
       let j = i;
-      while (j < text.length && /[a-zA-Z]/.test(text[j])) j++;
+      while (j < text.length && isLetter(text[j])) j++;
       tokens.push({ word: text.slice(i, j), start: i, type: 'word' });
       i = j;
     } else {
@@ -393,7 +415,7 @@ function tokenize(text) {
 
 /* check token against all stop words via DFA */
 function checkToken(token) {
-  const clean = token.toLowerCase().replace(/[^a-z]/g, '');
+  const clean = cleanWord(token);
   if (!clean) return { accepted: false, trace: [], finalState: -1 };
   for (const sw of STOP_WORDS) {
     if (sw.length !== clean.length) continue;
