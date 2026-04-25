@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L6 — DFA Stop Words Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style2.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">DFA <span>Stop</span>Words</div>
+  <span class="badge">CPT411 · L6 · 2025/2026</span>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>English Stop Words<br><em>Finder</em> — DFA</h1>
+    <p>Processes input text character-by-character using the exact DFA from JFLAP. Each token is walked through the transition table one character at a time.</p>
+  </div>
+
+  <div class="grid-2">
+        <div class="card-inputtext">
+            <div class="card-label">input text</div>
+                <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
+            <div class="action-row">
+                <button class="btn-primary" onclick="runDFA()">▶ Run full text</button>
+                <button class="btn-ghost" onclick="clearAll()">Clear</button>
+            </div>
+        </div>
+        <div class="card-stopwords">
+            <div class="card-label">stop word set Σ*  <span style="margin-left:auto;font-size:10px;color:var(--text3)">25 words</span></div>
+            <div class="chip-grid" id="wordChips"></div>
+        </div>
+    </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-tokens">—</div><div class="stat-lbl">tokens</div></div>
+    <div class="stat"><div class="stat-val" id="s-hits">—</div><div class="stat-lbl">matches</div></div>
+    <div class="stat"><div class="stat-val" id="s-unique">—</div><div class="stat-lbl">unique</div></div>
+    <div class="stat"><div class="stat-val" id="s-pct">—</div><div class="stat-lbl">coverage</div></div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('annotated',this)">annotated output</button>
+        <button class="tab"        onclick="switchTab('trace',this)">dfa trace</button>
+        <button class="tab"        onclick="switchTab('positions',this)">positions</button>
+        <button class="tab"        onclick="switchTab('occurrences',this)">occurrences</button>
+    </div>
+    <div id="tab-annotated" class="tab-panel active">
+        <div id="output" class="empty-state">Run the DFA on a text to see annotated output.</div>
+        </div>
+            <div id="tab-trace" class="tab-panel">
+                <div id="traceWrap">
+                    <div id="log" class="empty-state">State trace will appear here after running.</div>
+                </div>
+            </div>
+        <div id="tab-positions" class="tab-panel"> 
+            <div id="posTableWrap"></div>  
+        </div>
+        <div id="tab-occurrences" class="tab-panel">
+            <div id="occTable" class="empty-state">Occurrence table will appear after running.</div>
+        </div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

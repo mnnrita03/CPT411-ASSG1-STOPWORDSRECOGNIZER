@@ -1,20 +1,20 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:        #0e0f11;
-    --bg2:       #16181c;
-    --bg3:       #1e2026;
-    --border:    #2a2d35;
-    --border2:   #363a44;
-    --text:      #e8e9ec;
-    --text2:     #8a8f9e;
-    --text3:     #555b6a;
-    --accent:    #a78bfa;
-    --accent2:   #7c5cfa;
-    --accept:    #34d399;
-    --reject:    #f87171;
-    --hit-bg:    rgba(167,139,250,0.18);
-    --hit-fg:    #c4b5fd;
+ :root {
+    --bg:        #ffffff;  /* White background */
+    --bg2:       #f8f9fa;  /* Light gray for cards */
+    --bg3:       #e9ecef;  /* Lighter gray for inputs/buttons */
+    --border:    #dee2e6;  /* Light border color */
+    --border2:   #ced4da;  /* Slightly darker border */
+    --text:      #212529;  /* Dark text for readability */
+    --text2:     #6c757d;  /* Medium gray for secondary text */
+    --text3:     #495057;  /* Darker gray for labels */
+    --accent:    #007bff;  /* Blue accent (e.g., for highlights) */
+    --accent2:   #0056b3;  /* Darker blue for active states */
+    --accept:    #28a745;  /* Green for accept */
+    --reject:    #dc3545;  /* Red for reject */
+    --hit-bg:    rgba(0,123,255,0.1);  /* Light blue background for hits */
+    --hit-fg:    #0056b3;  /* Dark blue text for hits */
     --mono:      'IBM Plex Mono', monospace;
     --serif:     'DM Serif Display', serif;
     --sans:      'DM Sans', sans-serif;
@@ -222,6 +222,18 @@
     border: 1px solid var(--border2);
     color: var(--text2);
   }
+  /* Stop word category colors */
+  .chip.cat-articles { background: #ffeaa7; color: #2d3436; border-color: #fdcb6e; font-weight: 500; }
+  .chip.cat-pronouns { background: #a8e6cf; color: #27ae60; border-color: #55efc4; font-weight: 500; }
+  .chip.cat-conjunctions { background: #ff7675; color: #ffffff; border-color: #d63031; font-weight: 500; }
+  .chip.cat-prepositions { background: #74b9ff; color: #ffffff; border-color: #0984e3; font-weight: 500; }
+  .chip.cat-verbs { background: #dfe6e9; color: #2d3436; border-color: #b2bec3; font-weight: 500; }
+  
+  .hit.cat-articles { background: #ffeaa7; color: #2d3436; font-weight: 600; }
+  .hit.cat-pronouns { background: #a8e6cf; color: #27ae60; font-weight: 600; }
+  .hit.cat-conjunctions { background: #ff7675; color: #ffffff; font-weight: 600; }
+  .hit.cat-prepositions { background: #74b9ff; color: #ffffff; font-weight: 600; }
+  .hit.cat-verbs { background: #dfe6e9; color: #2d3436; font-weight: 600; }
 
   .tabs { display: flex; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
   .tab {
@@ -251,6 +263,11 @@
   .pos-table td { padding:5px 10px; border-bottom:1px solid var(--border); color:var(--text2); }
   .pos-table tr:hover td { background:var(--bg3); }
   .pos-table td.w { color:var(--hit-fg); font-weight:500; }
+  .pos-table td.cat-articles { background: rgba(255,234,167,0.3); }
+  .pos-table td.cat-pronouns { background: rgba(168,230,207,0.3); }
+  .pos-table td.cat-conjunctions { background: rgba(255,118,117,0.3); }
+  .pos-table td.cat-prepositions { background: rgba(116,185,255,0.3); }
+  .pos-table td.cat-verbs { background: rgba(223,230,233,0.3); }
 
   .occ-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   .occ-table th { text-align: left; padding: 6px 10px; color: var(--text3); font-weight: 400; border-bottom: 1px solid var(--border); }

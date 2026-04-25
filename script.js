@@ -134,6 +134,49 @@ const STOP_SET = {
   'is':1,'are':1,'was':1,'were':1,'as':1
 };
 
+/* Stop word categories for highlighting */
+const STOP_WORD_CATEGORIES = {
+  // 1. Articles (Determiners)
+  'a': 'articles',
+  'an': 'articles',
+  'the': 'articles',
+  
+  // 2. Pronouns (Subject, Object, Possessive)
+  'i': 'pronouns',
+  'it': 'pronouns',
+  'he': 'pronouns',
+  'she': 'pronouns',
+  'we': 'pronouns',
+  'they': 'pronouns',
+  'me': 'pronouns',
+  'us': 'pronouns',
+  'them': 'pronouns',
+  'my': 'pronouns',
+  'its': 'pronouns',
+  
+  // 3. Conjunctions (Coordinating & Subordinating)
+  'and': 'conjunctions',
+  'or': 'conjunctions',
+  'but': 'conjunctions',
+  'so': 'conjunctions',
+  'if': 'conjunctions',
+  'as': 'conjunctions',
+  
+  // 4. Prepositions
+  'in': 'prepositions',
+  'on': 'prepositions',
+  'at': 'prepositions',
+  'to': 'prepositions',
+  'of': 'prepositions',
+  'by': 'prepositions',
+  
+  // 5. Verbs (Present & Past)
+  'is': 'verbs',
+  'are': 'verbs',
+  'was': 'verbs',
+  'were': 'verbs'
+};
+
 /* ---------------------------------------------------------------
    2. Single-character helpers — NO string methods
 --------------------------------------------------------------- */
@@ -249,6 +292,8 @@ const STOP_WORD_LIST = ['a','an','and','at','by','but','he','i','if','in','it','
 for (let w = 0; w < STOP_WORD_LIST.length; w++) {
   const c = document.createElement('span');
   c.className = 'chip';
+  const category = STOP_WORD_CATEGORIES[STOP_WORD_LIST[w]];
+  if (category) c.className += ' cat-' + category;
   c.textContent = STOP_WORD_LIST[w];
   document.getElementById('wordChips').appendChild(c);
 }
@@ -313,8 +358,10 @@ function runDFA() {
 
   /* Build position lookup */
   const matchPosSet = {};
+  const matchCatSet = {};
   for (let m = 0; m < matches.length; m++) {
     matchPosSet[matches[m].pos] = true;
+    matchCatSet[matches[m].pos] = STOP_WORD_CATEGORIES[matches[m].normWord] || 'default';
   }
 
   /* ── Annotated output ── */
@@ -325,7 +372,8 @@ function runDFA() {
     const tok = tokens[t];
     const raw = tok.display.join('');
     if (tok.type === 'word' && matchPosSet[tok.start]) {
-      html += '<mark class="hit" title="pos:' + tok.start + '">' + escapeHTML(raw) + '</mark>';
+      const cat = matchCatSet[tok.start];
+      html += '<mark class="hit cat-' + cat + '" title="pos:' + tok.start + '">' + escapeHTML(raw) + '</mark>';
     } else {
       html += escapeHTML(raw);
     }
@@ -372,12 +420,15 @@ function runDFA() {
             '<th>#</th>' +
             '<th>token idx</th>' +
             '<th>stop word</th>' +
+            '<th>category</th>' +
             '<th>char position</th>' +
             '<th>final state</th>' +
           '</tr></thead>' +
           '<tbody>';
     for (let m = 0; m < matches.length; m++) {
       const match = matches[m];
+      const category = STOP_WORD_CATEGORIES[match.normWord] || 'unknown';
+      const catDisplay = category.charAt(0).toUpperCase() + category.slice(1);
       // find finalState from logRows
       let fs = '—';
       for (let r = 0; r < logRows.length; r++) {
@@ -387,8 +438,8 @@ function runDFA() {
         '<tr>' +
           '<td>' + (m + 1) + '</td>' +
           '<td>' + match.tokenIdx + '</td>' +
-          '<td class="w">' + escapeHTML(match.display) + '</td>' +
-          '<td>' + match.normWord + '</td>' +
+          '<td class="cat-' + category + '">' + escapeHTML(match.display) + '</td>' +
+          '<td class="cat-' + category + '">' + catDisplay + '</td>' +
           '<td>' + match.pos + '</td>' +
           '<td>' + fs + '</td>' +
         '</tr>';
