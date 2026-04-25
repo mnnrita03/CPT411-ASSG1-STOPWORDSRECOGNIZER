@@ -1,13 +1,13 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
  :root {
-    --bg:        #ffffff;  /* White background */
-    --bg2:       #f8f9fa;  /* Light gray for cards */
-    --bg3:       #e9ecef;  /* Lighter gray for inputs/buttons */
-    --border:    #dee2e6;  /* Light border color */
-    --border2:   #ced4da;  /* Slightly darker border */
-    --text:      #212529;  /* Dark text for readability */
-    --text2:     #6c757d;  /* Medium gray for secondary text */
+    --bg:        #ececec;  /* White bg */
+    --bg2:       #ffffff;  /* Light gray cards */
+    --bg3:       #f0efef;  /* Lighter gray  inputsn buttons */
+    --border:    #171717; 
+    --border2:   #525252; 
+    --text:      #060607;  /* Dark text for readability */
+    --text2:     #54575a;  /* Medium gray for secondary text */
     --text3:     #495057;  /* Darker gray for labels */
     --accent:    #007bff;  /* Blue accent (e.g., for highlights) */
     --accent2:   #0056b3;  /* Darker blue for active states */
@@ -72,7 +72,7 @@
 
   .grid-2 { 
     display: grid; 
-    grid-template-columns: 3fr 1fr;  /* Changed from 1fr 1fr to 3fr 1fr for 3:1 ratio */
+    grid-template-columns: 1fr 1fr;  /* Equal width for input and stop words */
     gap: 1rem; 
     margin-bottom: 1rem; 
   }
@@ -147,7 +147,7 @@
   .btn-primary { background: var(--accent2); border-color: var(--accent2); color: #fff; }
   .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
   .btn-ghost { background: transparent; }
-  .btn-ghost:hover { background: var(--bg3); }
+  .btn-ghost:hover { background: var(--bg3) }
 
   .stats {
     display: grid;
@@ -193,6 +193,7 @@
     color: var(--text3);
     max-height: 260px;
     overflow-y: auto;
+    overflow-x: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--border2) transparent;
   }
@@ -203,54 +204,152 @@
     padding: 3px 0;
     border-bottom: 1px solid var(--border);
     animation: fadeIn .2s ease;
+    min-width: max-content;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
   .log-row:last-child { border-bottom: none; }
   .tag-accept { color: var(--accept); font-weight: 500; min-width: 60px; }
-  .tag-reject { color: var(--reject); min-width: 60px; }
+  .tag-reject { color: var(--reject); font-weight: 500; min-width: 60px; }
   .log-word { color: var(--text); min-width: 90px; }
-  .log-trace { color: var(--text3); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-trace { color: var(--text3); flex: 0 0 auto; overflow: visible; text-overflow: clip; white-space: nowrap; }
   .log-pos { color: var(--text3); font-size: 10px; white-space: nowrap; }
 
-  .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    color: var(--text2);
+  .chip-grid {
+    display: grid;
+    gap: 0.6rem;
+  }
+.category-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.category-words {
+  font-size: 12px;
+  color: var(--text2, #636e72);
+}
+  .category-group strong {
+    color: var(--text);
+    font-weight: 500;
   }
   /* Stop word category colors */
-  .chip.cat-articles { background: #ffeaa7; color: #2d3436; border-color: #fdcb6e; font-weight: 500; }
-  .chip.cat-pronouns { background: #a8e6cf; color: #27ae60; border-color: #55efc4; font-weight: 500; }
-  .chip.cat-conjunctions { background: #ff7675; color: #ffffff; border-color: #d63031; font-weight: 500; }
-  .chip.cat-prepositions { background: #74b9ff; color: #ffffff; border-color: #0984e3; font-weight: 500; }
-  .chip.cat-verbs { background: #dfe6e9; color: #2d3436; border-color: #b2bec3; font-weight: 500; }
-  
-  .hit.cat-articles { background: #ffeaa7; color: #2d3436; font-weight: 600; }
-  .hit.cat-pronouns { background: #a8e6cf; color: #27ae60; font-weight: 600; }
-  .hit.cat-conjunctions { background: #ff7675; color: #ffffff; font-weight: 600; }
-  .hit.cat-prepositions { background: #74b9ff; color: #ffffff; font-weight: 600; }
-  .hit.cat-verbs { background: #dfe6e9; color: #2d3436; font-weight: 600; }
+  /* Stop word category colors — refined, not highlighter */
 
+.chip.cat-articles {
+  background: linear-gradient(135deg, #f6c90e, #e1a800);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(225, 168, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+
+.chip.cat-pronouns {
+  background: linear-gradient(135deg, #0fdc8f, #09b872);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(9, 184, 114, 0.4), inset 0 1px 0 rgba(255,255,255,0.22);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.chip.cat-conjunctions {
+  background: linear-gradient(135deg, #ff6b6b, #e0404f);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(224, 64, 79, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+
+.chip.cat-prepositions {
+  background: linear-gradient(135deg, #74b9ff, #2d8ff5);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(45, 143, 245, 0.4), inset 0 1px 0 rgba(255,255,255,0.22);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+
+.chip.cat-verbs {
+  background: linear-gradient(135deg, #f0f3f4, #dce1e4);
+  color: #4a5568;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  text-shadow: none;
+}
+
+/* Inline hits in text — same treatment */
+.hit.cat-articles {
+  background: linear-gradient(135deg, #f6c90e, #e1a800);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(225, 168, 0, 0.4);
+  font-weight: 600;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.hit.cat-pronouns {
+  background: linear-gradient(135deg, #0fdc8f, #09b872);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(9, 184, 114, 0.35);
+  font-weight: 600;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+
+.hit.cat-conjunctions {
+  background: linear-gradient(135deg, #ff6b6b, #e0404f);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(224, 64, 79, 0.35);
+  font-weight: 600;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.hit.cat-prepositions {
+  background: linear-gradient(135deg, #74b9ff, #2d8ff5);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(45, 143, 245, 0.35);
+  font-weight: 600;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.hit.cat-verbs {
+  background: linear-gradient(135deg, #f0f3f4, #dce1e4);
+  color: #4a5568;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-weight: 600;
+  border-radius: 4px;
+}
   .tabs { display: flex; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
   .tab {
     font-size: 12px;
     font-family: var(--mono);
     padding: 6px 14px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
+    background: #dfe6e9; color: #2d3436;;
+    border: #848484; 
     color: var(--text3);
     cursor: pointer;
     border-radius: 0;
     transition: color .15s, border-color .15s;
     margin-bottom: -1px;
   }
-  .tab:hover { color: var(--text2); background: none; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text2); background: #d1d1d1; }
+  .tab.active { color: var(--text2); background: none; border: #060607; }
 
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }

@@ -287,15 +287,33 @@ function switchTab(name, btn) {
   btn.classList.add('active');
 }
 
-// Chip list
-const STOP_WORD_LIST = ['a','an','and','at','by','but','he','i','if','in','it','its','me','my','of','on','or','she','so','the','them','they','to','us','we', 'is','are','was','were','as'];
-for (let w = 0; w < STOP_WORD_LIST.length; w++) {
-  const c = document.createElement('span');
-  c.className = 'chip';
-  const category = STOP_WORD_CATEGORIES[STOP_WORD_LIST[w]];
-  if (category) c.className += ' cat-' + category;
-  c.textContent = STOP_WORD_LIST[w];
-  document.getElementById('wordChips').appendChild(c);
+// Category groups for the stop-word legend
+const STOP_WORD_CATEGORY_ORDER = [
+  { key: 'articles', label: 'Articles', words: ['a', 'an', 'the'] },
+  { key: 'pronouns', label: 'Pronouns', words: ['i', 'it', 'he', 'she', 'we', 'they', 'me', 'us', 'them', 'my', 'its'] },
+  { key: 'conjunctions', label: 'Conjunctions', words: ['and', 'or', 'but', 'so', 'if', 'as'] },
+  { key: 'prepositions', label: 'Prepositions', words: ['in', 'on', 'at', 'to', 'of', 'by'] },
+  { key: 'verbs', label: 'Verbs', words: ['is', 'are', 'was', 'were'] }
+];
+
+const wordChips = document.getElementById('wordChips');
+for (let i = 0; i < STOP_WORD_CATEGORY_ORDER.length; i++) {
+  const group = STOP_WORD_CATEGORY_ORDER[i];
+  const catClass = 'cat-' + group.label.toLowerCase();
+  const section = document.createElement('div');
+  section.className = 'category-group';
+
+  const labelChip = document.createElement('span');
+  labelChip.className = `chip ${catClass}`;
+  labelChip.textContent = group.label;
+
+  const wordsSpan = document.createElement('span');
+  wordsSpan.className = 'category-words';
+  wordsSpan.textContent = group.words.join(', ');
+
+  section.appendChild(labelChip);
+  section.appendChild(wordsSpan);
+  wordChips.appendChild(section);
 }
 
 /* ---------------------------------------------------------------
