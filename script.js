@@ -1,11 +1,4 @@
 /*
-  STRICT char-by-char rules:
-    • text[i] / charAt(i)  — only indexed access
-    • charCodeAt(0)        — for char comparison & case fold
-    • NO indexOf / includes / startsWith / match / replace / split
-    • toLowerCase() is NOT used on strings — fold case manually
-      one character at a time via lowerCharCode()
-
     1. Hardcoded DFA transition table
         Format: DELTA[stateName][charLabel] = nextStateName
         'others' = any char not explicitly listed from that state
@@ -78,14 +71,7 @@ const DELTA = {
   'q37': { 'others':'q37' },
 };
 
-/*
-  Accept states from JFLAP
-
-  We only accept if BOTH:
-    (a) current state is in ACCEPT_STATES  AND
-    (b) the token string is exactly a known stop word
-        (checked via our hardcoded STOP_SET)
-*/
+/*  Accept states */
 const ACCEPT_STATES = {
   'q1':true,'q3':true,'q4':true,'q5':true,'q6':true,'q7':true,
   'q10':true,'q11':true,'q12':true,'q14':true,'q15':true,
@@ -204,9 +190,7 @@ function runDFAOnToken(charArr) {
   return { accepted: accepted, steps: steps, finalState: state, normWord: normWord };
 }
 
-/* ---------------------------------------------------------------
-   5. Tokeniser — strictly char-by-char, no split/regex
---------------------------------------------------------------- */
+/* 5. Tokeniser — strictly char-by-char, no split/regex */
 function tokenize(text) {
   const tokens = [];
   let i = 0;
@@ -230,10 +214,8 @@ function tokenize(text) {
   return tokens;
 }
 
-/* ---------------------------------------------------------------
-   6. Build trace string from steps using q-labels
-      Format: q0 --a-> q1 -> q5
---------------------------------------------------------------- */
+/* 6. Build trace string from steps using q-labels
+      Format: q0 --a-> q1 -> q5 */
 function buildTraceStr(steps, startState) {
   let s = startState;
   for (let i = 0; i < steps.length; i++) {
@@ -243,9 +225,7 @@ function buildTraceStr(steps, startState) {
   return s;
 }
 
-/* ---------------------------------------------------------------
-   7. UI helpers
---------------------------------------------------------------- */
+/* 7. UI helpers */
 function switchTab(name, btn) {
   const panels = document.querySelectorAll('.tab-panel');
   for (let i = 0; i < panels.length; i++) panels[i].classList.remove('active');
@@ -284,9 +264,7 @@ for (let i = 0; i < STOP_WORD_CATEGORY_ORDER.length; i++) {
   wordChips.appendChild(section);
 }
 
-/* ---------------------------------------------------------------
-   8. HTML escape — char by char, no replace()
---------------------------------------------------------------- */
+/* 8. HTML escape — char by char, no replace() */
 function escapeHTML(str) {
   let out = '';
   for (let i = 0; i < str.length; i++) {
@@ -299,16 +277,14 @@ function escapeHTML(str) {
   return out;
 }
 
-/* ---------------------------------------------------------------
-   9. Main run
---------------------------------------------------------------- */
+/* 9. Main run */
 function runDFA() {
   const text = document.getElementById('textInput').value;
   if (!text) return;
 
   const tokens     = tokenize(text);
   const wordTokens = [];
-  const matches    = [];   // { display, normWord, pos, tokenIdx }
+  const matches    = [];   
   const logRows    = [];
 
   let tokenIdx = 0;
@@ -350,7 +326,7 @@ function runDFA() {
     matchCatSet[matches[m].pos] = STOP_WORD_CATEGORIES[matches[m].normWord] || 'default';
   }
 
-  /* ── Annotated output ── */
+  /*  Annotated output  */
   const out = document.getElementById('output');
   out.classList.remove('empty-state');
   let html = '';
@@ -366,7 +342,7 @@ function runDFA() {
   }
   out.innerHTML = html;
 
-  /* ── Stats ── */
+  /*  Stats  */
   const uniqueObj = {};
   for (let m = 0; m < matches.length; m++) uniqueObj[matches[m].normWord] = true;
   const uniqueCount = Object.keys(uniqueObj).length;
@@ -376,7 +352,7 @@ function runDFA() {
   document.getElementById('s-unique').textContent = uniqueCount;
   document.getElementById('s-pct').textContent    = pct;
 
-  /* ── DFA Trace log ── */
+  /*  DFA Trace log  */
   const logEl = document.getElementById('log');
   logEl.classList.remove('empty-state');
   let logHTML = '';
@@ -393,7 +369,7 @@ function runDFA() {
   }
   logEl.innerHTML = logHTML;
 
-  /* ── Position + Stop Word table (below trace) ── */
+  /*  Position + Stop Word table */
   const posWrap = document.getElementById('posTableWrap');
   if (matches.length === 0) {
     posWrap.innerHTML = '';
@@ -434,7 +410,7 @@ function runDFA() {
     posWrap.innerHTML = tHTML;
   }
 
-  /* ── Occurrences ── */
+  /*  Occurrences  */
   const counts = {};
   for (let m = 0; m < matches.length; m++) {
     const k = matches[m].normWord;
@@ -487,9 +463,7 @@ function runDFA() {
     document.getElementById('tab-annotated').classList.add('active');
 }
 
-/* ---------------------------------------------------------------
-   10. Clear
---------------------------------------------------------------- */
+/* 10. Clear */
 function clearAll() {
   document.getElementById('textInput').value = '';
   document.getElementById('output').className   = 'empty-state';
