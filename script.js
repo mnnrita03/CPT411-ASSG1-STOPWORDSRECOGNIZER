@@ -1,98 +1,75 @@
 /*
-  ================================================================
-  CPT411 L6 — DFA Stop Words Finder
-  ----------------------------------------------------------------
-  DFA states taken DIRECTLY from JFLAP export (state names used
-  verbatim: q0, q1, q2, … q37).
-
   STRICT char-by-char rules:
     • text[i] / charAt(i)  — only indexed access
     • charCodeAt(0)        — for char comparison & case fold
     • NO indexOf / includes / startsWith / match / replace / split
-    • toLowerCase() is NOT used on strings — we fold case manually
+    • toLowerCase() is NOT used on strings — fold case manually
       one character at a time via lowerCharCode()
-  ================================================================
+
+    1. Hardcoded DFA transition table
+        Format: DELTA[stateName][charLabel] = nextStateName
+        'others' = any char not explicitly listed from that state
+        Trap states (q32,q33,q34,q35,q36,q37) loop on 'others'.
 */
 
-/* ---------------------------------------------------------------
-   1. Hardcoded DFA transition table from JFLAP
-      Format: DELTA[stateName][charLabel] = nextStateName
-      'others' = any char not explicitly listed from that state
-      Trap states (q32,q33,q34,q35,q36,q37) loop on 'others'.
---------------------------------------------------------------- */
 const DELTA = {
-  // ── start state ──────────────────────────────────────────────
+  // start state
   'q0':  { 'a':'q1',  'b':'q16', 'h':'q22', 'i':'q28', 'm':'q26',
            'o':'q13', 's':'q24', 't':'q8',  'u':'q18', 'w':'q20',
-           'others':'q0' },   // q0 loops — non-matching first chars stay
+           'others':'q32' }, 
 
-  // ── a-branch ─────────────────────────────────────────────────
-  // a → q1(✓"a"), an → q5(✓"an"), and → q6(✓"and")
-  // at → q7(✓"at"), are → q2→q3(✓"are"... but not a stop word
-  //   — handled: q1 'r' → q2 which is not final unless "are" typed fully;
-  //   we only ACCEPT at word boundary when state is final AND token ends.
+  // a-branch
   'q1':  { 'n':'q5',  't':'q7',  'r':'q2',  's':'q4',  'others':'q33' },
   'q2':  { 'e':'q3',  'others':'q33' },
-  'q3':  { 'others':'q33' },   // accept "are" — but only if token == "are"
-                                // our boundary check handles stop-word-only accept
-  'q4':  { 'others':'q33' },   // "as" path — not a stop word, q4 is final in JFLAP
-                                // but "as" is not in our set; boundary check rejects
+  'q3':  { 'others':'q33' },   
+  'q4':  { 'others':'q33' },   
   'q5':  { 'd':'q6',  'others':'q33' },
-  'q6':  { 'others':'q33' },   // ✓ "and"
-  'q7':  { 'others':'q34' },   // ✓ "at" / also reached via t-branch "to"
+  'q6':  { 'others':'q33' },  
+  'q7':  { 'others':'q34' }, 
 
-  // ── i-branch ─────────────────────────────────────────────────
-  // i → q28(✓), if → q31(✓), in → q25(✓), it → q30(✓), its → q31 reused
+  //  i-branch 
   'q28': { 'f':'q31', 'n':'q25', 't':'q30', 's':'q29', 'others':'q32' },
   'q30': { 's':'q31', 'others':'q32' },   // ✓ "it"  → q30;  "its" → q31
   'q31': { 'others':'q32' },              // ✓ "if" / "its"
   'q29': { 'others':'q32' },              // ✓ "is" — not in list; boundary rejects
   'q25': { 'others':'q32' },              // ✓ "in" / "my" end / "so" end
 
-  // ── t-branch ─────────────────────────────────────────────────
-  // to → q7(✓), the → q10(✓), they → q11(✓), them → q12(✓)
+  // t-branch 
   'q8':  { 'o':'q7',  'h':'q9',  'others':'q34' },
   'q9':  { 'e':'q10', 'others':'q34' },
   'q10': { 'y':'q11', 'm':'q12', 'others':'q34' },
   'q11': { 'others':'q34' },   // ✓ "they"
   'q12': { 'others':'q34' },   // ✓ "them"
 
-  // ── h-branch ─────────────────────────────────────────────────
-  // he → q23(✓)
+  // h-branch
   'q22': { 'e':'q23', 'others':'q37' },
   'q23': { 'others':'q37' },   // ✓ "he" / "she" end / "the" end → same state
 
-  // ── s-branch ─────────────────────────────────────────────────
-  // so → q25(✓), she → q23(✓)
+  // s-branch 
   'q24': { 'o':'q25', 'h':'q22', 'others':'q37' },
 
-  // ── o-branch ─────────────────────────────────────────────────
-  // or → q14(✓), of → q12 reused(✓), on → q15(✓)
+  // o-branch 
   'q13': { 'r':'q14', 'f':'q12', 'n':'q15', 'others':'q35' },
-  'q14': { 'others':'q35' },   // ✓ "or"
-  'q15': { 'others':'q35' },   // ✓ "on"
+  'q14': { 'others':'q35' },   
+  'q15': { 'others':'q35' },   
 
-  // ── b-branch ─────────────────────────────────────────────────
-  // by → q15 reused(✓), but → q15 reused(✓)
+  // b-branch 
   'q16': { 'y':'q15', 'u':'q17', 'others':'q36' },
   'q17': { 't':'q15', 'others':'q35' },
 
-  // ── u-branch ─────────────────────────────────────────────────
-  // us → q19(✓)
+  // u-branch 
   'q18': { 's':'q19', 'others':'q36' },
-  'q19': { 'others':'q36' },   // ✓ "us"
+  'q19': { 'others':'q36' },   
 
-  // ── w-branch ─────────────────────────────────────────────────
-  // we → q21(✓), was → q19 reused (not stop word)
+  // w-branch 
   'q20': { 'e':'q21', 'a':'q18', 'others':'q36' },
-  'q21': { 'r':'q22', 'others':'q36' },   // ✓ "we"  (r continues to "were")
+  'q21': { 'r':'q22', 'others':'q36' },   
 
-  // ── m-branch ─────────────────────────────────────────────────
-  // me → q27(✓), my → q25 reused(✓)
+  // m-branch 
   'q26': { 'e':'q27', 'y':'q25', 'others':'q37' },
-  'q27': { 'others':'q37' },   // ✓ "me"
+  'q27': { 'others':'q37' },   
 
-  // ── trap states (loop on everything) ─────────────────────────
+  // trap states (loop on everything) 
   'q32': { 'others':'q32' },
   'q33': { 'others':'q33' },
   'q34': { 'others':'q34' },
@@ -102,15 +79,12 @@ const DELTA = {
 };
 
 /*
-  Accept states from JFLAP (final attribute):
-  q1, q3, q4, q5, q6, q7, q10, q11, q12, q14, q15, q19, q21,
-  q23, q25, q27, q28, q29, q30, q31
+  Accept states from JFLAP
 
   We only accept if BOTH:
     (a) current state is in ACCEPT_STATES  AND
     (b) the token string is exactly a known stop word
-        (checked via our hardcoded STOP_SET — avoids accepting
-         "are", "as", "is", "was", "were" which share states)
+        (checked via our hardcoded STOP_SET)
 */
 const ACCEPT_STATES = {
   'q1':true,'q3':true,'q4':true,'q5':true,'q6':true,'q7':true,
@@ -119,7 +93,7 @@ const ACCEPT_STATES = {
   'q28':true,'q29':true,'q30':true,'q31':true
 };
 
-// The valid stop words — used only for boundary acceptance check
+// The valid stop words — used only for boundary acceptance check (1- true)
 const STOP_SET = {
   'a':1,'an':1,'and':1,'at':1,
   'by':1,'but':1,
@@ -177,9 +151,8 @@ const STOP_WORD_CATEGORIES = {
   'were': 'verbs'
 };
 
-/* ---------------------------------------------------------------
-   2. Single-character helpers — NO string methods
---------------------------------------------------------------- */
+/* 2. Single-character helpers — NO string methods */
+
 function lowerCharCode(code) {
   // A=65..Z=90 → a=97..z=122
   if (code >= 65 && code <= 90) return code + 32;
@@ -190,10 +163,7 @@ function isAlphaCode(code) {
   return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
 }
 
-/* ---------------------------------------------------------------
-   3. DFA transition — one character at a time
-      Returns next state name string.
---------------------------------------------------------------- */
+/* 3. DFA transition — one character at a time. Returns next state name string. */
 function transition(state, ch) {
   const row = DELTA[state];
   if (!row) return 'q33';                // unknown state → trap
@@ -205,11 +175,9 @@ function transition(state, ch) {
   return 'q33';
 }
 
-/* ---------------------------------------------------------------
-   4. Run DFA on a token (array of chars)
+/* 4. Run DFA on a token (array of chars)
       Returns { accepted, traceSteps[], finalState, normWord }
-      traceSteps: array of { ch, from, to }
---------------------------------------------------------------- */
+      traceSteps: array of { ch, from, to } */
 function runDFAOnToken(charArr) {
   let state = 'q0';
   const steps = [];
