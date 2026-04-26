@@ -6,9 +6,9 @@ A Deterministic Finite Automaton (DFA) implementation that recognizes and identi
 
 | Name | Metric Number |
 |------|---------------|
-| [MIZAN QISTINA BINTI NORUDEN] | [160355] |
+| MIZAN QISTINA BINTI NORUDEN | 160355 |
 | NORITA BINTI MUIN | 160453 |
-| [Student Name 3] | [Metric Number 3] |
+| NUR SYAFIQAH BINTI MOHD YUSOF | 160444 |
 
 
 ## Overview
