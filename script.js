@@ -71,7 +71,7 @@ const DELTA = {
   'q37': { 'others':'q37' },
 };
 
-/*  Accept states */
+// Accept states
 const ACCEPT_STATES = {
   'q1':true,'q3':true,'q4':true,'q5':true,'q6':true,'q7':true,
   'q10':true,'q11':true,'q12':true,'q14':true,'q15':true,
